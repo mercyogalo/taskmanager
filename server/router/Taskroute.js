@@ -31,10 +31,23 @@ router.put('/task/:id', async(req, res)=>{
 
 })
 
-router.get('/tasks', async(req,res)=>{
+router.get('/groupTasks', async(req,res)=>{
    try {
-    const tasks=await Task.find();
-    res.json(tasks);
+    const groupTasks=await Task.aggregate([
+        {
+            $sort:{agency:-1}
+        },
+        {
+            $group:{
+                _id:'$title',
+                tasks:{$push:'$$ROOT'}
+            }
+        },
+        {
+            $sort:{'_id':-1}
+        }
+    ]);
+    res.json(groupTasks);
    } catch (error) {
     res.status(500).json({error:error.mesage})
    }
@@ -52,4 +65,4 @@ router.delete('/task/:id', async(req, res)=>{
 
 })
 
-module.exports(router);
+module.exports=router;
